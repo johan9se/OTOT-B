@@ -6,25 +6,31 @@ name: Node.js CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-  build:
+  cont-integration:
 
     runs-on: ubuntu-latest
+    env:
+      ENV: LOCAL
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
+        node-version: [16.x]
+        mongodb-version: ['6.0']
+        
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.8.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
+
+    - run: npm install
+    - run: npm start & npx wait-on http://localhost:8000
     - run: npm test
