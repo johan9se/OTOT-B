@@ -32,5 +32,4 @@ jobs:
         mongodb-version: ${{ matrix.mongodb-version }}
 
     - run: npm install
-    - run: npm start & npx wait-on http://localhost:8000
     - run: npm test
