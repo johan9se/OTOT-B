@@ -3,5 +3,5 @@ COPY package*.json ./
 RUN npm i
 COPY . .
 COPY index.js api-routes.js ./
-EXPOSE 8000/tcp
+EXPOSE 8000
 CMD ["npm", "start"]
