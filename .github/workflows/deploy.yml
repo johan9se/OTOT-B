@@ -38,8 +38,8 @@ jobs:
       with:
         aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
         aws_secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-        application_name: vita-elastic-beanstalk-trial
-        environment_name: Vitaelasticbeanstalktrial-env
+        application_name: BbtDiary
+        environment_name: Bbtdiary-env
         region: ${{ secrets.AWS_DEFAULT_REGION }}
         version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
         deployment_package: deploy.zip
