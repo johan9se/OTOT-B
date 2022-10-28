@@ -40,7 +40,7 @@ jobs:
         aws_secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
         application_name: BbtDiary
         environment_name: Bbtdiary-env
-        region: ${{ secrets.AWS_DEFAULT_REGION }}
+        region: us-east-1
         version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
         deployment_package: deploy.zip
 
