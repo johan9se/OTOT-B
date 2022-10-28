@@ -5,21 +5,44 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install EB CLI using pip
-        run: |
-          python -m pip install --upgrade pip
-          pip install awsebcli
-      - name: Deploy to Elastic Beanstalk
-        run: |
-          eb init bbtdiary -k ${{env.AWS_ACCESS_KEY_ID}} --region ${{env.AWS_DEFAULT_REGION}}
-          eb deploy
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Installing NPM
+      run: npm install
+      
+    - run: npm ci
+
+    - name: Generate deployment package
+      run: zip -r deploy.zip * -x "**node_modules**"
+      
+    - name: Get timestamp
+      uses: gerred/actions/current-time@master
+      id: current-time
+
+    - name: Run string replace
+      uses: frabert/replace-string-action@master
+      id: format-time
+      with:
+        pattern: '[:\.]+'
+        string: "${{ steps.current-time.outputs.time }}"
+        replace-with: '-'
+        flags: 'g'
+  
+    - name: Beanstalk Deploy my app
+      uses: einaregilsson/beanstalk-deploy@v18
+      with:
+        aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
+        aws_secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        application_name: BbtDiary
+        environment_name: Bbtdiary-env
+        region: us-east-1
+        version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
+        deployment_package: deploy.zip
+
+    - name: Deployed successfully!
+      run: echo App deployed to ELB
