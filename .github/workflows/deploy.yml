@@ -6,51 +6,43 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Latest Repo
-        uses: actions/checkout@master
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Installing NPM
+      run: npm install
+      
+    - run: npm ci
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+    - name: Generate deployment package
+      run: zip -r deploy.zip * -x "**node_modules**"
+      
+    - name: Get timestamp
+      uses: gerred/actions/current-time@master
+      id: current-time
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    - name: Run string replace
+      uses: frabert/replace-string-action@master
+      id: format-time
+      with:
+        pattern: '[:\.]+'
+        string: "${{ steps.current-time.outputs.time }}"
+        replace-with: '-'
+        flags: 'g'
+  
+    - name: Beanstalk Deploy my app
+      uses: einaregilsson/beanstalk-deploy@v18
+      with:
+        aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
+        aws_secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        application_name: vita-elastic-beanstalk-trial
+        environment_name: Vitaelasticbeanstalktrial-env
+        region: ${{ secrets.AWS_DEFAULT_REGION }}
+        version_label: "app-version-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
+        deployment_package: deploy.zip
 
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: OTOT-B/bbtdiary:latest
-      # .github/workflows/main.yml continued
-
-      - name: Get Timestamp
-        uses: gerred/actions/current-time@master
-        id: current-time
-
-      - name: Run String Replace
-        uses: frabert/replace-string-action@master
-        id: format-time
-        with:
-          pattern: '[:\.]+'
-          string: "${{ steps.current-time.outputs.time }}"
-          replace-with: '-'
-          flags: 'g'
-
-      - name: Generate Deployment Package
-        run: zip -r deploy.zip * -x "**node_modules**"
-
-      - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v16
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: BbtDiary
-          environment_name: Bbtdiary-env
-          version_label: "docker-app-${{ steps.format-time.outputs.replaced }}"
-          region: ${{ secrets.AWS_DEFAULT_REGION }}
-          deployment_package: deploy.zip
-          
+    - name: Deployed successfully!
+      run: echo App deployed to ELB
