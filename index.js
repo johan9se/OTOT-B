@@ -27,9 +27,9 @@ app.use('/api', apiRoutes);
 
 // CONNECT
 // Connect to Mongoose and set connection variable
-let mongoDB = process.env.MONGODB_URI || 'mongodb://localhost/bbtdiary';
+const mongoDB = process.env.NODE_ENV === "production" ? process.env.MONGODB_URI : 'mongodb://localhost/bbtdiary';
+console.log("URI used:" + mongoDB);
 mongoose.connect(mongoDB, { useNewUrlParser: true , useUnifiedTopology: true});
-// mongoose.connect('mongodb://localhost/bbtdiary', { useNewUrlParser: true});
 var db = mongoose.connection;
 
 // Added check for DB connection
