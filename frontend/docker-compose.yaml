@@ -1,0 +1,7 @@
+version: '1.0'
+services:
+  app:
+    image: bbt-react-i
+    build: .
+    ports:
+      - 3000:3000
