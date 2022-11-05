@@ -52,7 +52,7 @@ jobs:
     - run: npm ci
 
     - name: Generate deployment package
-      run: zip -r deploy.zip * -x "**node_modules**"
+      run: zip -r deploy.zip * -x "**node_modules**" -x "**docker-compose**"
       
     - name: Get timestamp
       uses: gerred/actions/current-time@master
