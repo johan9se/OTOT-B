@@ -10,6 +10,7 @@ var bbtSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    price: Number,
     rating: Number,
     comments: String,
     create_date: {

@@ -24,6 +24,7 @@ exports.new = function (req, res) {
     var bbt = new Bbt();                    // Attributes: drink, shop, rating, comments
     bbt.drink = req.body.drink ? req.body.drink : bbt.drink;
     bbt.shop = req.body.shop;
+    bbt.price = req.body.price;
     bbt.rating = req.body.rating;
     bbt.comments = req.body.comments;
 
@@ -60,6 +61,7 @@ exports.update = function (req, res) {
         
         bbt.drink = req.body.drink ? req.body.drink : bbt.drink;
         bbt.shop = req.body.shop;
+        bbt.price = req.body.price;
         bbt.rating = req.body.rating;
         bbt.comments = req.body.comments;
 

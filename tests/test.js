@@ -55,6 +55,7 @@ describe("BBTS", () => {
             let good_sample_bbt = {
                 drink: "green milk tea",
                 shop: "LiHo",
+                price: 4.80,
                 rating: 4,
                 comments: "yummy",
             }
@@ -81,6 +82,7 @@ describe("BBTS", () => {
             let bbt = new Bbt({
                 drink: "honey milk tea",
                 shop: "Koi",
+                price: 4.80,
                 rating: 5,
                 comments: "sweet & refreshing",
             });
@@ -108,6 +110,7 @@ describe("BBTS", () => {
             let bbt = new Bbt({
                 drink: "taro coconut shake",
                 shop: "idk",
+                price: 6,
                 rating: 3,
                 comments: "light taro taste",
             });
@@ -138,6 +141,7 @@ describe("BBTS", () => {
             let bbt = new Bbt({
                 drink: "peach honey tea",
                 shop: "sweettea",
+                price: 2.80,
                 rating: 2,
                 comments: "too sweet",
             });

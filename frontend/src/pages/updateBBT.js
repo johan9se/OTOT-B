@@ -12,11 +12,11 @@ import {
   import { URL_BBT_API } from '../configs';
   import { STATUS_CODE_OK, STATUS_CODE_CREATED, STATUS_CODE_BADREQ } from '../constants';
   
-  // pass props { bbt_id }
   export default function UpdateBbt({ bbt_id, setRefreshList }) {
     const mode = bbt_id ? 'edit' : 'add';
     const [drink, setDrink] = useState('');
     const [shop, setShop] = useState('');
+    const [price, setPrice] = useState('');
     const [rating, setRating] = useState(0);
     const [comments, setComment] = useState('');
     
@@ -35,6 +35,7 @@ import {
             const bbt_obj = res.data.data;
             setDrink(bbt_obj.drink);
             setShop(bbt_obj.shop);
+            setPrice(bbt_obj.price || '');
             setRating(bbt_obj.rating);
             setComment(bbt_obj.comments);
         }
@@ -49,6 +50,7 @@ import {
     const resetForm = () => {
         setDrink('');
         setShop('');
+        setPrice('');
         setRating(0);
         setComment('');
         setRefreshList(true);
@@ -56,11 +58,11 @@ import {
 
     const handleSubmit = async () => {
         if (mode === 'add') {
-            const res = await axios.post(URL_BBT_API, { drink, shop, rating, comments }).catch((err) => {
+            const res = await axios.post(URL_BBT_API, { drink, shop, price, rating, comments }).catch((err) => {
                 if (err.response.status === STATUS_CODE_BADREQ) {
-                setErrorAlert('Invalid entry');
+                    setErrorAlert('Invalid entry. Must include valid drink and shop.');
                 } else {
-                setErrorAlert('Please try again later');
+                    setErrorAlert('Please try again later');
                 }
             });
             if (res && res.status === STATUS_CODE_CREATED) {
@@ -68,11 +70,11 @@ import {
                 resetForm();
             }
         } else if (mode === 'edit') {
-            const res = await axios.put(URL_BBT_API + bbt_id, { drink, shop, rating, comments }).catch((err) => {
+            const res = await axios.put(URL_BBT_API + bbt_id, { drink, shop, price, rating, comments }).catch((err) => {
                 if (err.response.status === STATUS_CODE_BADREQ) {
-                setErrorAlert('Invalid entry');
+                    setErrorAlert('Invalid entry. Must include valid drink and shop.');
                 } else {
-                setErrorAlert('Please try again later');
+                    setErrorAlert('Please try again later');
                 }
             });
             if (res && res.status === STATUS_CODE_OK) {
@@ -107,15 +109,17 @@ import {
           display: 'flex',
           justifyContent: 'center',
           alignSelf: 'center',
-          height: '100vh'
+          minHeight: '100vh',
+          height: '100%'
         }}
       >
         <Box
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: 'start',
             mx: 'auto',
+            pt: '30px',
             width: '80%'
           }}
         >
@@ -147,6 +151,14 @@ import {
                 variant="outlined"
                 value={shop}
                 onChange={(e) => setShop(e.target.value)}
+                sx={{ marginBottom: '1rem' }}
+            />
+            <TextField
+                label="Price (SGD)"
+                variant="outlined"
+                value={price}
+                type="number"
+                onChange={(e) => setPrice(e.target.value)}
                 sx={{ marginBottom: '2rem' }}
             />
             <Typography>Rating</Typography>

@@ -4,16 +4,27 @@ import {
     Rating,
     Typography
 } from '@mui/material';
+import { useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StoreIcon from '@mui/icons-material/Store';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
-export default function BbtCard({ bbt_obj, handleEdit, handleDelete }) {
+import axios from 'axios';
+import { SERVERLESS_CONVERTER } from '../configs';
+import { STATUS_CODE_OK } from '../constants';
+
+export default function BbtCard({ bbt_obj, handleEdit, handleDelete, ToCurrency = 'SGD' }) {
     const id = bbt_obj._id;
     const drink = bbt_obj.drink;
     const shop = bbt_obj.shop;
     const rating = bbt_obj.rating;
     const comments = bbt_obj.comments;
+    const defaultCurrency = ToCurrency;
+    const [price, setPrice] = useState(bbt_obj.price);
+    const [fromCurrency, setFromCurrency] = useState('SGD');
+    const [toCurrency, setToCurrency] = useState(ToCurrency.toUpperCase());
 
     const handleEditButton = () => {
         handleEdit(id);
@@ -21,6 +32,24 @@ export default function BbtCard({ bbt_obj, handleEdit, handleDelete }) {
 
     const handleDeleteButton = () => {
         handleDelete(id);
+    }
+
+    const handleConvert = async () => {
+        if (price) {
+            let url = SERVERLESS_CONVERTER + '?from=' + fromCurrency + '&to=' + toCurrency + '&amount=' + price;
+            const res = await axios.get(url).catch((err) => {
+                if (err) {
+                    console.log("cannot convert");
+                    setPrice(price);
+                }
+            });
+            if (res && res.status === STATUS_CODE_OK) {
+                setPrice(res.data.toFixed(2));
+                let temp = toCurrency;
+                setFromCurrency(temp);
+                setToCurrency(fromCurrency);
+            }
+        }
     }
 
     const roundBubbleButtons = {
@@ -60,6 +89,15 @@ export default function BbtCard({ bbt_obj, handleEdit, handleDelete }) {
                     >
                     <StoreIcon sx={{ mr: 1}}/><Typography variant="body1">{shop}</Typography>
                     </Box>
+                    { price && (
+                        <Box
+                            sx={{
+                                display: 'flex'
+                            }}    
+                        >
+                        <MonetizationOnIcon sx={{ mr: 1}}/><Typography variant="body1">{price} {fromCurrency}</Typography>
+                        </Box>
+                    )}
                 </Grid>
 			    <Grid item 
                     xs={3} 
@@ -82,17 +120,26 @@ export default function BbtCard({ bbt_obj, handleEdit, handleDelete }) {
                         justifyContent: 'flex-end'
                     }}
                 >
+                    { (price && defaultCurrency !== 'SGD') && (
+                        <Box 
+                            sx={roundBubbleButtons}
+                            onClick={handleConvert}
+                        >
+                            <SwapHorizIcon />
+                        </Box>
+                    )}
+                    
                     <Box 
                         sx={roundBubbleButtons}
                         onClick={handleEditButton}
                     >
-                        <EditIcon></EditIcon>
+                        <EditIcon />
                     </Box>
                     <Box 
                         sx={roundBubbleButtons}
                         onClick={handleDeleteButton}
                     >
-                        <DeleteIcon></DeleteIcon>
+                        <DeleteIcon />
                     </Box>
                 </Grid>
             </Grid>
