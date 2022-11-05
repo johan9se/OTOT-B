@@ -1,0 +1,19 @@
+version: "1.0"
+services:
+  web:
+    build: .
+    image: johan9se/otot-b
+    depends_on:
+      - mongo
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      MONGODB_LOCAL_URI: mongodb://mongo:27017
+  mongo:
+    image: mongo:4.2.23-rc1
+    volumes:
+      - mongovolume:/data/db
+
+volumes:
+  mongovolume:
