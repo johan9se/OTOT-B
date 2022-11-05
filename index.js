@@ -33,10 +33,10 @@ mongoose.connect(mongoDB, { useNewUrlParser: true , useUnifiedTopology: true});
 var db = mongoose.connection;
 
 // Added check for DB connection
-if(!db)
-    console.log("Error connecting db")
-else
-    console.log("Db connected successfully")
+db.on('connected', function() {
+    console.log("MongoDB connected successfully")
+})
+db.on('error', console.error.bind(console, "MongoDB connection error!"))
 
 // Send message for default URL
 app.get('/', (req, res) => res.send('Hello World with Express and Nodemon'));
