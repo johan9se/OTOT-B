@@ -1,21 +1,47 @@
 // Import bubble tea model
 var Bbt = require('../model/model');
+require('../database/database').connect();
+const createClient = require('redis').createClient;
+
+const redisClient = createClient({
+    url: process.env.REDIS_URI
+})
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+redisClient.connect().then(() => { console.log('Connected to Redis!') });
 
 // Handle index actions
 // GET /bbts route to retrieve all the bbts
 exports.index = function (req, res) {
-    Bbt.get(function (err, bbts) {
-        if (err) {
+    Bbt.get(async function (err, bbts) {
+        try {
+            await redisClient.set('all-bbt', JSON.stringify(bbts));
+            res.status(200).json({
+                message: "Database Bbts retrieved and cached successfully",
+                data: bbts,
+            });
+        } catch (err) {
             res.status(400).json({
                 status: "error",
                 message: err,
             });
         }
-        res.status(200).json({
-            message: "Bbts retrieved successfully",
-            data: bbts,
-        });
     });
+};
+
+// GET /bbtsCache route to retrieve all the bbts in cache
+exports.cached = async function (req, res) {
+    // Try search cache first
+    const cache = await redisClient.get('all-bbt');
+
+    if (cache) {
+        const cachedBbts = JSON.parse(cache);
+        return res.status(200).json({
+            message: "Cached Bbts retrieved successfully",
+            data: cachedBbts,
+        });
+    } else {
+        return res.status(200).send("Cache is empty!");
+    }
 };
 
 // Handle create bbt actions
@@ -90,4 +116,14 @@ exports.delete = function (req, res) {
             message: 'Bbt deleted',
         });
     });
+};
+
+// Handle delete cached entries
+exports.deleteCache = async function (req, res) {
+    try {
+        redisClient.del('all-bbt');
+        return res.status(200).send("Redis cache deleted");
+    } catch(err) {
+        return res.status(500).send(`Error deleteting cache: ${err}`);
+    }
 };

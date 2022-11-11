@@ -23,5 +23,8 @@ router.route('/bbts/:bbt_id')
     .put(bbtController.update)
     .delete(bbtController.delete);
 
+router.get('/bbts_cache', bbtController.cached);
+router.get('/delete_cache', bbtController.deleteCache);
+
 // Export API routes
 module.exports = router;
