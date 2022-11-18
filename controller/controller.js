@@ -12,36 +12,18 @@ redisClient.connect().then(() => { console.log('Connected to Redis!') });
 // Handle index actions
 // GET /bbts route to retrieve all the bbts
 exports.index = function (req, res) {
-    Bbt.get(async function (err, bbts) {
-        try {
-            await redisClient.set('all-bbt', JSON.stringify(bbts));
-            res.status(200).json({
-                message: "Database Bbts retrieved and cached successfully",
-                data: bbts,
-            });
-        } catch (err) {
+    Bbt.get(function (err, bbts) {
+        if (err) {
             res.status(400).json({
                 status: "error",
                 message: err,
             });
         }
-    });
-};
-
-// GET /bbtsCache route to retrieve all the bbts in cache
-exports.cached = async function (req, res) {
-    // Try search cache first
-    const cache = await redisClient.get('all-bbt');
-
-    if (cache) {
-        const cachedBbts = JSON.parse(cache);
-        return res.status(200).json({
-            message: "Cached Bbts retrieved successfully",
-            data: cachedBbts,
+        res.status(200).json({
+            message: "Bbts retrieved successfully",
+            data: bbts,
         });
-    } else {
-        return res.status(200).send("Cache is empty!");
-    }
+    });
 };
 
 // Handle create bbt actions
@@ -116,6 +98,35 @@ exports.delete = function (req, res) {
             message: 'Bbt deleted',
         });
     });
+};
+
+// GET /bbts_cache route to retrieve all the bbts in cache
+exports.cached = async function (req, res) {
+    try {
+        // Try search cache first
+        const cache = await redisClient.get('all-bbt');
+
+        if (cache) {
+            const cachedBbts = JSON.parse(cache);
+            return res.status(200).json({
+                message: "Cached Bbts retrieved successfully",
+                data: cachedBbts,
+            });
+        }
+        
+        const bbts = await Bbt.find();
+        await redisClient.set('all-bbt', JSON.stringify(bbts));
+        return res.status(200).json({
+            message: "Database Bbts retrieved and cached successfully",
+            data: bbts,
+        });
+    } catch (err) {
+        console.log(`Error: ${err}`);
+        return res.status(500).json({
+            status: "error",
+            message: err,
+        });
+    }
 };
 
 // Handle delete cached entries
